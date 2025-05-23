@@ -187,10 +187,10 @@ def simulate_debate_generation(podcast_details: Dict) -> Dict:
     Simulate the debate generation process.
     In a real implementation, this would call your OpenAI backend.
     """
-    topic = podcast_details.get("topic", "a fascinating topic")
+    
     host = podcast_details["host"]
     guests = podcast_details["guests"]
-    
+    topic = host["topic"]
     # Simulate processing time
     time.sleep(2)
     
@@ -204,7 +204,7 @@ def simulate_debate_generation(podcast_details: Dict) -> Dict:
             {
                 "name": guests[0]["name"],
                 "stance": f"Advocates for {topic} from {guests[0]['company']} perspective with {guests[0]['characteristic']} approach",
-                "company": guests[0]["company"] 
+                "company": guests[0]["company"]
             },
             {
                 "name": guests[1]["name"],
@@ -266,7 +266,7 @@ def main():
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         try:
-            st.image("static/logo.png", width=120, use_container_width=False)
+            st.image("static/logo.png")
         except:
             # Fallback emoji if logo doesn't exist
             st.markdown("<div style='text-align: center; font-size: 4rem; margin: 1rem 0;'>🎭</div>", unsafe_allow_html=True)
@@ -286,367 +286,121 @@ def main():
     # INPUT CONFIGURATION SECTION
     # =====================================
     
-    st.markdown('<div class="section-header">🎯 Design Your Perfect Debate</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">⚙️ Configure Your Debate</div>', unsafe_allow_html=True)
     
-    # Topic selection with creative suggestions
-    st.markdown("### 💡 What's sparking debate today?")
+    # Topic input with quick suggestions
+    topic = st.text_input(
+        "🎯 What topic should they debate?", 
+        value="The Impact of AI on Future Employment",
+        placeholder="Enter any topic you'd like to explore...",
+        help="Choose something controversial or thought-provoking"
+    )
     
-    # Predefined topic suggestions
-    suggested_topics = [
-        "The Impact of AI on Future Employment",
-        "Should Social Media Platforms Regulate Free Speech?",
-        "Universal Basic Income: Economic Revolution or Utopian Dream?",
-        "Climate Change: Individual vs Corporate Responsibility",
-        "The Future of Remote Work in a Post-Pandemic World",
-        "Cryptocurrency: Digital Gold or Speculative Bubble?",
-        "Gene Editing: Medical Miracle or Playing God?",
-        "Space Colonization: Humanity's Next Chapter or Costly Fantasy?"
+    # Quick topic suggestions
+    suggestions = [
+        "Climate Change Solutions", "Future of Remote Work", "Universal Basic Income", 
+        "Social Media Regulation", "Space Exploration Priorities", "Gene Editing Ethics"
     ]
     
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        # Topic input with suggestions
-        topic = st.text_input(
-            "🔥 Enter your debate topic or choose from suggestions below:",
-            value="The Impact of AI on Future Employment",
-            help="What controversial or thought-provoking topic would you like to explore?"
-        )
-    
-    with col2:
-        if st.button("🎲 Surprise Me!", help="Get a random topic suggestion"):
-            import random
-            topic = random.choice(suggested_topics)
-            st.rerun()
-    
-    # Topic suggestions as clickable pills
-    st.markdown("**💭 Popular debate topics:**")
-    cols = st.columns(4)
-    for i, suggestion in enumerate(suggested_topics[:4]):
-        with cols[i % 4]:
-            if st.button(f"💡 {suggestion[:25]}{'...' if len(suggestion) > 25 else ''}", 
-                        key=f"topic_{i}", 
-                        help=suggestion,
-                        use_container_width=True):
+    st.markdown("**💡 Popular topics:**")
+    cols = st.columns(3)
+    for i, suggestion in enumerate(suggestions):
+        with cols[i % 3]:
+            if st.button(suggestion, key=f"topic_{i}", use_container_width=True):
                 topic = suggestion
                 st.rerun()
     
-    # Show remaining suggestions in expandable section
-    with st.expander("🔍 See more topic suggestions"):
-        cols = st.columns(2)
-        for i, suggestion in enumerate(suggested_topics[4:]):
-            with cols[i % 2]:
-                if st.button(f"💡 {suggestion}", key=f"topic_extra_{i}", use_container_width=True):
-                    topic = suggestion
-                    st.rerun()
+    st.markdown("---")
     
-    # Perspective with visual indicators
-    st.markdown("### 🕰️ Choose your debate lens")
-    perspective_options = {
-        "Historical": {"emoji": "📚", "desc": "Learn from the past - examine historical precedents and lessons"},
-        "Modern": {"emoji": "🚀", "desc": "Focus on current trends and contemporary viewpoints"},
-        "Mixed": {"emoji": "🔄", "desc": "Blend historical wisdom with modern insights"}
-    }
-    
+    # Simple perspective choice
     perspective = st.radio(
-        "How would you like to frame this debate?",
-        options=list(perspective_options.keys()),
-        format_func=lambda x: f"{perspective_options[x]['emoji']} {x} - {perspective_options[x]['desc']}",
-        index=1,
-        help="This affects how your AI participants will approach the topic"
+        "🔍 **Debate Style:**",
+        ["Modern", "Historical", "Mixed"],
+        horizontal=True,
+        help="How should they approach this topic?"
     )
     
     st.markdown("---")
     
-    # Enhanced Host Configuration
-    st.markdown("### 🎙️ Craft Your Ideal Moderator")
-    st.markdown("*The host sets the tone and guides the conversation*")
-    
-    # Host persona presets
-    host_presets = {
-        "Academic Scholar": {
-            "name": "Dr. Elena Martinez",
-            "style": "Balanced academic moderator with expertise in facilitating constructive dialogue",
-            "emoji": "🎓"
-        },
-        "Investigative Journalist": {
-            "name": "Marcus Johnson",
-            "style": "Sharp, probing journalist who asks tough questions and seeks truth",
-            "emoji": "📰"
-        },
-        "Diplomatic Mediator": {
-            "name": "Ambassador Chen Wei",
-            "style": "Calm, neutral mediator focused on finding common ground and understanding",
-            "emoji": "🤝"
-        },
-        "Tech Visionary": {
-            "name": "Dr. Aria Singh",
-            "style": "Forward-thinking tech expert who bridges complex concepts for broad audiences",
-            "emoji": "💡"
-        }
-    }
-    
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        selected_host = st.selectbox(
-            "🎭 Choose a host archetype:",
-            options=list(host_presets.keys()),
-            help="Select a pre-designed host personality or customize your own"
-        )
-        
-        if st.button("🎯 Use This Host", key="use_preset_host"):
-            host_name = host_presets[selected_host]["name"]
-            host_style = host_presets[selected_host]["style"]
-    
-    with col2:
-        st.markdown(f"**{host_presets[selected_host]['emoji']} Preview:** {host_presets[selected_host]['name']}")
-        st.markdown(f"*{host_presets[selected_host]['style']}*")
-    
-    # Custom host inputs
+    # Host Configuration - Simplified
+    st.markdown("### 🎙️ Your Moderator")
     col1, col2 = st.columns(2)
     with col1:
-        host_name = st.text_input(
-            "🎤 Host Name:",
-            value=host_presets[selected_host]["name"],
-            help="Give your moderator a memorable name"
-        )
+        host_name = st.text_input("Name", value="Dr. Sarah Chen", placeholder="e.g., Dr. Sarah Chen")
     with col2:
-        host_style = st.text_input(
-            "🧠 Moderation Style:",
-            value=host_presets[selected_host]["style"],
-            help="Describe how your host approaches debates and conversations"
+        host_style = st.selectbox(
+            "Style", 
+            [
+                "Balanced and professional",
+                "Sharp and challenging", 
+                "Calm and diplomatic",
+                "Energetic and engaging"
+            ]
         )
     
     st.markdown("---")
     
-    # Enhanced Guest Configuration with Personality Builder
-    st.markdown("### 👥 Build Your Dream Team of Debaters")
-    st.markdown("*Create compelling characters with opposing viewpoints*")
-    
-    # Guest archetypes for inspiration
-    guest_archetypes = {
-        "The Optimist": {"char": "Enthusiastic and future-focused", "emoji": "🌟"},
-        "The Skeptic": {"char": "Cautious and evidence-based", "emoji": "🔍"},
-        "The Revolutionary": {"char": "Bold and change-oriented", "emoji": "⚡"},
-        "The Traditionalist": {"char": "Values-driven and conservative", "emoji": "🏛️"},
-        "The Pragmatist": {"char": "Practical and solution-focused", "emoji": "🛠️"},
-        "The Idealist": {"char": "Principled and vision-driven", "emoji": "💫"}
-    }
+    # Guest Configuration - Simplified
+    st.markdown("### 👥 Your Debaters")
     
     col1, col2 = st.columns(2)
     
-    # Guest 1 Configuration
+    # Guest 1
     with col1:
-        st.markdown("#### 🎭 **First Debater**")
-        
-        # Archetype selector for Guest 1
-        g1_archetype = st.selectbox(
-            "Choose personality type:",
-            options=list(guest_archetypes.keys()),
-            key="g1_archetype",
-            format_func=lambda x: f"{guest_archetypes[x]['emoji']} {x}"
-        )
-        
-        guest1_name = st.text_input(
-            "👤 Name:", 
-            value="Dr. Michael Thompson",
-            key="g1_name",
-            help="Give them a professional-sounding name"
-        )
-        
-        guest1_company = st.text_input(
-            "🏢 Organization:", 
-            value="Future of Work Institute",
-            key="g1_company",
-            help="Where do they work or what do they represent?"
-        )
-        
-        guest1_characteristic = st.text_input(
-            "⚡ Personality:", 
-            value=guest_archetypes[g1_archetype]["char"],
-            key="g1_char",
-            help="What makes their debating style unique?"
-        )
-        
-        # Visual preview
-        st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); 
-                    padding: 1rem; border-radius: 10px; margin: 0.5rem 0;">
-            <strong>{guest_archetypes[g1_archetype]['emoji']} {guest1_name}</strong><br>
-            <small>{guest1_company} • {guest1_characteristic}</small>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("**Debater 1**")
+        guest1_name = st.text_input("Name", value="Prof. Michael Chen", key="g1_name", placeholder="e.g., Prof. Michael Chen")
+        guest1_company = st.text_input("Organization", value="Tech Research Institute", key="g1_company", placeholder="Where they work")
+        guest1_type = st.selectbox("Personality", ["Analytical", "Optimistic", "Cautious", "Bold"], key="g1_type")
     
-    # Guest 2 Configuration
+    # Guest 2  
     with col2:
-        st.markdown("#### 🎭 **Second Debater**")
-        
-        # Archetype selector for Guest 2
-        g2_archetype = st.selectbox(
-            "Choose personality type:",
-            options=list(guest_archetypes.keys()),
-            key="g2_archetype",
-            format_func=lambda x: f"{guest_archetypes[x]['emoji']} {x}",
-            index=2  # Default to a different archetype
-        )
-        
-        guest2_name = st.text_input(
-            "👤 Name:", 
-            value="Prof. Sarah Kim",
-            key="g2_name",
-            help="Give them a professional-sounding name"
-        )
-        
-        guest2_company = st.text_input(
-            "🏢 Organization:", 
-            value="AI Innovation Labs",
-            key="g2_company",
-            help="Where do they work or what do they represent?"
-        )
-        
-        guest2_characteristic = st.text_input(
-            "⚡ Personality:", 
-            value=guest_archetypes[g2_archetype]["char"],
-            key="g2_char",
-            help="What makes their debating style unique?"
-        )
-        
-        # Visual preview
-        st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); 
-                    padding: 1rem; border-radius: 10px; margin: 0.5rem 0;">
-            <strong>{guest_archetypes[g2_archetype]['emoji']} {guest2_name}</strong><br>
-            <small>{guest2_company} • {guest2_characteristic}</small>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # Quick randomize button for guests
-    if st.button("🎲 Randomize Both Debaters", help="Generate random but compelling debater profiles"):
-        import random
-        # This would trigger a rerun with randomized values
-        st.info("🎭 Click again to see your new random debaters!")
+        st.markdown("**Debater 2**")
+        guest2_name = st.text_input("Name", value="Dr. Lisa Rodriguez", key="g2_name", placeholder="e.g., Dr. Lisa Rodriguez")
+        guest2_company = st.text_input("Organization", value="Policy Think Tank", key="g2_company", placeholder="Where they work")
+        guest2_type = st.selectbox("Personality", ["Passionate", "Practical", "Skeptical", "Visionary"], key="g2_type", index=1)
     
     st.markdown("---")
     
-    # Enhanced AI Options with visual appeal
-    st.markdown("### 🤖 AI Enhancement Options")
-    
+    # Simple options
+    st.markdown("### 🤖 Options")
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        use_openai = st.checkbox(
-            "🧠 **GPT-Powered Content**", 
-            value=True,
-            help="Use advanced AI for more nuanced and intelligent responses"
-        )
-        if use_openai:
-            st.success("🚀 Enhanced intelligence enabled!")
-    
+        use_openai = st.checkbox("🧠 Enhanced AI", value=True, help="Better, more nuanced responses")
     with col2:
-        generate_audio = st.checkbox(
-            "🎵 **Audio Podcast**", 
-            value=False,
-            help="Generate lifelike speech for your debate (experimental)"
-        )
-        if generate_audio:
-            st.info("🎧 Audio generation selected!")
-    
+        generate_audio = st.checkbox("🎵 Audio Version", help="Generate speech (experimental)")
     with col3:
-        advanced_mode = st.checkbox(
-            "⚙️ **Advanced Mode**", 
-            value=False,
-            help="More detailed arguments and longer responses"
-        )
-        if advanced_mode:
-            st.warning("🔧 Advanced mode activated!")
+        debate_length = st.selectbox("Length", ["Short", "Medium", "Long"], index=1)
     
-    # Fun debate length slider
-    debate_length = st.slider(
-        "🕰️ **Debate Duration**",
-        min_value=3,
-        max_value=15,
-        value=8,
-        help="Number of exchanges between participants (more = longer debate)"
-    )
-    
-    col1, col2 = st.columns([1, 3])
-    with col1:
-        if debate_length <= 5:
-            st.markdown("⚡ **Quick & Punchy**")
-        elif debate_length <= 10:
-            st.markdown("🎯 **Balanced Discussion**")
-        else:
-            st.markdown("📚 **Deep Dive Analysis**")
-    
-    with col2:
-        st.markdown(f"*Your debate will have approximately {debate_length} rounds of discussion*")
-    
-    # Generate button with excitement
+    # Generate button - Simple and clean
     st.markdown("---")
-    st.markdown("### 🚀 Ready to Create Magic?")
-    
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-        generate_button = st.button(
-            "✨ Generate My Epic Debate ✨", 
-            use_container_width=True,
-            help="Click to bring your debate to life with AI magic!"
-        )
-        
-        if generate_button:
-            st.balloons()  # Celebration effect
-    
-    # Quick preview of what will be generated
-    with st.expander("🔮 What you'll get"):
-        st.markdown(f"""
-        **Your debate will include:**
-        - 🎙️ **Moderator**: {host_name} with {host_style.lower()}
-        - 👥 **Participants**: {guest1_name} vs {guest2_name}
-        - 💬 **Topic**: {topic}
-        - 🕰️ **Rounds**: ~{debate_length} exchanges
-        - 📱 **Format**: Professional transcript + participant cards
-        {"- 🎧 **Audio**: Generated speech version" if generate_audio else ""}
-        {"- 🧠 **Enhanced**: GPT-powered responses" if use_openai else ""}
-        """)
-    
-    # Add some motivational text
-    if not generate_button:
-        st.markdown("""
-        <div style="text-align: center; color: #666; font-style: italic; margin: 1rem 0;">
-            🎭 Configure your perfect debate above, then hit the magic button!
-        </div>
-        """, unsafe_allow_html=True)
+        generate_button = st.button("✨ Generate Debate", use_container_width=True, type="primary")
     
     # =====================================
     # DEBATE GENERATION AND OUTPUT
     # =====================================
     
     if generate_button:
-        # Prepare podcast details with enhanced parameters
+        # Prepare podcast details
         podcast_details = {
-            "topic": topic,
-            "perspective": perspective,
-            "debate_length": debate_length,
-            "advanced_mode": advanced_mode,
             "host": {
                 "name": host_name,
-                "style": host_style
+            "topic": topic,
             },
             "guests": [
                 {
                     "name": guest1_name,
                     "company": guest1_company,
-                    "characteristic": guest1_characteristic,
-                    "archetype": g1_archetype
+                    "characteristic": guest1_type
                 },
                 {
                     "name": guest2_name,
                     "company": guest2_company,
-                    "characteristic": guest2_characteristic,
-                    "archetype": g2_archetype
+                    "characteristic": guest2_type
                 }
-            ],
-            "use_openai": use_openai,
-            "generate_audio": generate_audio
+            ]
         }
         
         # Show loading spinner
